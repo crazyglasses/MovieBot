@@ -1,0 +1,12 @@
+[
+    ('Tell me about this movie', "about"),
+    ("I would like to know about this movie", "about"),
+    ("I think I want to know more about this movie", "about"),
+    ("Can you tell me more about this movie", "about"),
+    ("I want to know more about this movie", "about"),
+    ("Can you suggest me a movie to watch?", "suggest"),
+    ("Suggest me a movie to watch ", "suggest"),
+    ("Suggest me a movie to watch in ", "suggest"),
+    ("I think I want to watch a movie", "suggest"),
+    ("I would like you to suggest me a movie", "suggest")
+]

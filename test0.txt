@@ -1,0 +1,8 @@
+[
+    ("I want to know more this movie", "about"),
+    ("What do you think about this movie?", "about"),
+    ("I want more information about this movie", "about"),
+    ("I would like you to suggest me a movie", "suggest"),
+    ("Suggest me a movie", "suggest"),  
+    ("I would like suggestions", "suggest"),
+]

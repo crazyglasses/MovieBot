@@ -1,0 +1,12 @@
+test = [
+    ("ropa", "spanish"),
+    ("comprar", "spanish"),
+    ("camisa", "spanish"),
+    ("agua", "spanish"),
+    ("telefono", "spanish"),
+    ("clothes", "english"),
+    ("buy", "english"),
+    ("shirt", "english"),
+    ("water", "english"),
+    ("telephone", "english")
+]
