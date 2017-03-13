@@ -1,0 +1,26 @@
+1) Have the following packages pre-installed using pip
+nltk ( link : http://www.nltk.org/install.html ) 
+requests  ( link : http://docs.python-requests.org/en/master/user/install/ )
+beautifulsoup4 (link : https://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-beautiful-soup )
+scikit-learn ( and its dependencies : NumPy >= 1.6.1 , SciPy >= 0.9 ) (link : http://scikit-learn.org/stable/install.html )
+
+Or install the anaconda suite which comes preinstalled with all the requisite data science packages 
+
+2) Github url : https://github.com/crazyglasses/MovieBot
+Clone into the system using : git clone https://github.com/crazyglasses/MovieBot.git
+
+3) Go into the folder 
+4) Run the python interpreter and type the following commands 
+
+	import nltk
+	nltk.download()
+
+5) Now a dialog box appears from where you can download the datasets .
+6) Download the following datasets .
+From the 'Corpora ' Tab : movie_reviews , names , stopwords , words
+Fromt the 'Models ' Tab : averaged_perceptron , maxent_ne_chunker , punkt 
+
+For all of these downloads ,  message 'True' will be shown if they downloaded successfully 
+7) Close the python interpreter 
+8) Run the python program using command 'python chatbot.py' and converse with the bot 
+9) To end the conversation , type 'Bye'

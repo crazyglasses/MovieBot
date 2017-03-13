@@ -4,7 +4,7 @@ import questions as Q
 import subprocess
 from nltk.corpus import names
 import logging
-logging.basicConfig()
+
 import requests
 import random
 import sentiment as sent
@@ -22,8 +22,8 @@ from nltk import word_tokenize
 
 movies = {'action' : ['The Equalizer','Logan',' Mad Max: Fury Road','Rogue One','Star Wars'],'comedy' : ['Deadpool','The Nice Guys','Kingsman: The Secret Service','The Man from U.N.C.L.E.','Kung Fu Hustl '],'romance':['Titanic','The Notebook','When Harry Met Sally','Casablanca','Eternal Sunshine of the Spotless Min '],'horror':['Scary Movie','The Exorcist','The Shining','The Conjuring','Siniste '],'thriller':['Seven','Psycho','The Sixth Sense','Rear Window','Shutter Islan '],'adventure':['Hollywood Adventures','Raiders of the Lost Ark','The Lord of the Rings','Avatar','Jurassic Park']}
 
-def train(classifier, xtrain, ytrain,xtest,ytest):
 
+def train(classifier, xtrain, ytrain,xtest,ytest):
 	classifier.fit(xtrain, ytrain)
 
 	print "Accuracy: %s" % classifier.score(xtest, ytest)
@@ -60,6 +60,7 @@ class Bot:
 	skip_state = False
 	state_one_visited = False
 	def __init__(self):
+		logging.basicConfig()
 		self.loop_flag = True
 		self.bot_state = 0
 		self.QuestionObject = Q.Question()
@@ -129,10 +130,14 @@ class Bot:
 
 		if self.bot_state == 2:
 
-			if response.lower() == 'yes':
+			if response.lower() == 'yes' or response.lower() == 'yeah':
 				url =  "https://api.nytimes.com/svc/movies/v2/reviews/search.json?api-key=73073227b3f343a384cb585053cd5a32&critics-pick=N&query=" + str(self.movie)
-				json = requests.get(url).json()
-				review_url =  str(json['results'][0]['link']['url']).replace('http://www.','https://')
+				try:
+					json = requests.get(url).json()
+					review_url =  str(json['results'][0]['link']['url']).replace('http://www.','https://')
+				except:
+					print "Sorry I am not able to fetch the review for that movie"
+					return
 				print "Movie Bot : You can read the complete review here . " + str(review_url)
 				review = requests.get(review_url)
 				soup = BeautifulSoup(review.text, 'html.parser')
@@ -159,8 +164,8 @@ class Bot:
 			json = requests.get(url).json()
 		except: 
 			print " I am not able to reach my server right now"
-
-		genre = raw_input("Can you please tell me which genre movies do you like? ")
+		print "Movie Bot : Can you please tell me which genre movies do you like? "
+		genre = raw_input("You : ")
 		return genre
 
 
@@ -179,8 +184,11 @@ bot = Bot()
 while bot.conversationNotOver():
 	print "Movie Bot : " + str(bot.question())
 	response = raw_input("You  :  ")
-	if 'bye' in response:
+	if 'bye' in response.lower():
+		print "Movie Bot : Thank you and have a nice day " 
 		bot.endConversation()
+		break
+
 
 	bot.preprosess(response)
 	bot.next_state()
