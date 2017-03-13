@@ -8,6 +8,9 @@ logging.basicConfig()
 import requests
 import random
 import sentiment as sent
+from bs4 import BeautifulSoup
+import unicodedata
+
 
 
 from sklearn.naive_bayes import MultinomialNB
@@ -54,6 +57,8 @@ class Bot:
 	detector0 = None
 	movie  = None
 	sentiment = None
+	skip_state = False
+	state_one_visited = False
 	def __init__(self):
 		self.loop_flag = True
 		self.bot_state = 0
@@ -70,8 +75,11 @@ class Bot:
 		self.loop_flag = False
 	def question(self):
 		if self.bot_state == 1:
-			return self.QuestionObject.returnquestion(self.bot_state) + " " + str(self.name) + ". Do you want to know about a movie or want me to suggest something you would like to watch ? "
-
+			if not self.state_one_visited:
+				self.state_one_visited = True
+				return self.QuestionObject.returnquestion(self.bot_state) + " " + str(self.name) + ". Do you want to know about a movie or want me to suggest something you would like to watch ? "
+			else:
+				return " Do you want to know about a movie or want me to suggest something you would like to watch ? "
 		return self.QuestionObject.returnquestion(self.bot_state)
 	def extractnames(self,sentences):
 		names = []
@@ -92,7 +100,7 @@ class Bot:
 		if self.bot_state == 0:
 			names = self.extractnames(sentences)
 			if len(names) == 0:
-				print "Movie Bot : Could you please tell me your name?"
+				print "Movie Bot : Sorry , I couldn't get you ,  Could you please tell me your name?"
 				self.name = raw_input('You : ')
 			else:
 				self.name = names[0]
@@ -104,27 +112,51 @@ class Bot:
 				self.movie = moviename
 				url = "http://www.omdbapi.com/?t=" + str(moviename)
 				json = requests.get(url).json()
-				print "Movie Bot : " + "The title of the movie is " + (json['Title']) + ". It was released in the year " + (json['Year']) + " and is a " + (json['Genre']) + " movie. It is directed by " + (json['Director']) + ". It has the following awards :" + (json['Awards'])
- 				 
+				try:
+					print "Movie Bot : " + "The title of the movie is " + (json['Title']) + ". It was released in the year " + (json['Year']) + " and is a " + (json['Genre']) + " movie. It is directed by " + (json['Director']) + ". It has the following awards :" + (json['Awards'])
+ 				except:
+ 				 	print "Movie Bot : Sorry I couldn't understand"
+ 				 	self.skip_state = True
 
 			elif label == 1:
 				genre =  self.detectgenre(response)
 				if genre in movies:
 					self.movie =  movies[genre][random.randint(0,(len(movies[genre])-1))]
 					print "Movie Bot : I suggest you to watch " + self.movie
+				else:
+					self.movie = movies['action'][random.randint(0,(len(movies[genre])-1))]
+					print "Movie Bot : I suggest you to watch " + self.movie
+
 		if self.bot_state == 2:
 
 			if response.lower() == 'yes':
 				url =  "https://api.nytimes.com/svc/movies/v2/reviews/search.json?api-key=73073227b3f343a384cb585053cd5a32&critics-pick=N&query=" + str(self.movie)
 				json = requests.get(url).json()
-				print json['results']
+				review_url =  str(json['results'][0]['link']['url']).replace('http://www.','https://')
+				print "Movie Bot : You can read the complete review here . " + str(review_url)
+				review = requests.get(review_url)
+				soup = BeautifulSoup(review.text, 'html.parser')
+				soup_review = soup.find_all("p", class_="story-body-text story-content")
+				review_final = ''
+				for x in soup_review:
+					review_final = review_final + str(unicodedata.normalize('NFKD', x.get_text()).encode('ascii','ignore'))
+
+				sent = self.sentiment.classify({'a' : review_final})
+				if sent == 'pos':
+					print "Movie Bot : After analysing the review, I think it is a good movie "
+				if sent == 'neg':
+					print "Movie Bot : After analysing the review, I think it is not a good movie "
+				
+					
+
+				
+				
 
 	def detectgenre(self,sentence):
 		
 		url = "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/ddba8f91-8175-4878-a28e-a91519272397?subscription-key=23183b4aa8e64c2bbb20bdc225dc257e&verbose=true&q=" + sentence
 		try:
 			json = requests.get(url).json()
-			print json
 		except: 
 			print " I am not able to reach my server right now"
 
@@ -134,7 +166,12 @@ class Bot:
 
 
 	def next_state(self):
-		self.bot_state = self.bot_state + 1
+		if not self.skip_state:
+			if self.bot_state == 2:
+				self.bot_state = 0
+			self.bot_state = self.bot_state + 1
+		else:
+			self.skip_state = False
 
 
 subprocess.call("clear", shell=True)
@@ -142,8 +179,11 @@ bot = Bot()
 while bot.conversationNotOver():
 	print "Movie Bot : " + str(bot.question())
 	response = raw_input("You  :  ")
+	if 'bye' in response:
+		bot.endConversation()
+
 	bot.preprosess(response)
 	bot.next_state()
-	continue
-	bot.endConversation()
+	
+	
 
